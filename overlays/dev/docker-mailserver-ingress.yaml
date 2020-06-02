@@ -1,0 +1,23 @@
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: mailserver
+  namespace: mailserver
+  labels:
+    app: mailserver
+  annotations:
+    kubernetes.io/tls-acme: 'true'
+    cert-manager.io/cluster-issuer: letsencrypt-stage
+spec:
+  rules:
+    - host: mail.n0secure.org
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: default-backend
+              servicePort: 80
+  tls:
+    - secretName: mailserver.tls
+      hosts:
+        - mail.n0secure.org

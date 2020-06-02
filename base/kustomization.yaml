@@ -1,0 +1,6 @@
+resources:
+  - docker-mailserver-ns.yaml
+  - docker-mailserver-ingress.yaml
+  - docker-mailserver-config.yaml
+  - docker-mailserver-pvc.yaml
+  - docker-mailserver-deployment.yaml

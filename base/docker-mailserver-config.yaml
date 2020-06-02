@@ -1,0 +1,74 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mailserver.env.config
+  namespace: mailserver
+  labels:
+    app: mailserver
+data:
+  OVERRIDE_HOSTNAME: example.com
+  ENABLE_FETCHMAIL: "0"
+  FETCHMAIL_POLL: "120"
+  ENABLE_SPAMASSASSIN: "1"
+  ENABLE_CLAMAV: "1"
+  ENABLE_FAIL2BAN: "1"
+  ENABLE_POSTGREY: "1"
+  ONE_DIR: "1"
+  DMS_DEBUG: "0"
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mailserver.config
+  namespace: mailserver
+  labels:
+    app: mailserver
+data:
+  # This line is usefull because domain.name is on 2 files (error with postfix)
+  postfix-main.cf: |
+    mydestination = localhost.example.com localhost
+  # use mkpasswd to generate password
+  postfix-accounts.cf: |
+    admin@example.com|{SHA512-CRYPT}XXXX
+  postfix-virtual.cf: |
+    webmaster@example.com admin@example.com
+
+  #dovecot.cf: |
+  #  service stats {
+  #    unix_listener stats-reader {
+  #      group = docker
+  #      mode = 0666
+  #    }
+  #    unix_listener stats-writer {
+  #      group = docker
+  #      mode = 0666
+  #    }
+  #  }
+
+  SigningTable: |
+    *@example.com mail._domainkey.example.com
+
+  KeyTable: |
+    mail._domainkey.example.com example.com:mail:/etc/opendkim/keys/example.com-mail.key
+
+  TrustedHosts: |
+    127.0.0.1
+    localhost
+ 
+  #user-patches.sh: |
+  #  #!/bin/bash
+
+  #fetchmail.cf: |
+
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: mailserver.opendkim.keys
+  namespace: mailserver
+  labels:
+    app: mailserver
+type: Opaque
+# base 64 reencoding is needed
+data:
+  example.com-mail.key: 'XXX'

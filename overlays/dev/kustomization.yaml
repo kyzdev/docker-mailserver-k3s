@@ -1,0 +1,5 @@
+bases:
+  - ../../base
+patches:
+  - docker-mailserver-config.yaml
+  - docker-mailserver-ingress.yaml

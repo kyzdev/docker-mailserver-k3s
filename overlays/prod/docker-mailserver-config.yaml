@@ -1,0 +1,74 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mailserver.env.config
+  namespace: mailserver
+  labels:
+    app: mailserver
+data:
+  OVERRIDE_HOSTNAME: n0secure.org
+  ENABLE_FETCHMAIL: "0"
+  FETCHMAIL_POLL: "120"
+  ENABLE_SPAMASSASSIN: "1"
+  ENABLE_CLAMAV: "1"
+  ENABLE_FAIL2BAN: "1"
+  ENABLE_POSTGREY: "1"
+  ONE_DIR: "1"
+  DMS_DEBUG: "0"
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mailserver.config
+  namespace: mailserver
+  labels:
+    app: mailserver
+data:
+  # This line is usefull because domain.name is on 2 files (error with postfix)
+  postfix-main.cf: |
+    mydestination = localhost.n0secure.org localhost
+  postfix-accounts.cf: |
+    admin@n0secure.org|{SHA512-CRYPT}XXX
+
+  postfix-virtual.cf: |
+    webmaster@n0secure.org admin@n0secure.org
+
+  #dovecot.cf: |
+  #  service stats {
+  #    unix_listener stats-reader {
+  #      group = docker
+  #      mode = 0666
+  #    }
+  #    unix_listener stats-writer {
+  #      group = docker
+  #      mode = 0666
+  #    }
+  #  }
+
+  SigningTable: |
+    *@n0secure.org mail._domainkey.n0secure.org
+
+  KeyTable: |
+    mail._domainkey.n0secure.org n0secure.org:mail:/etc/opendkim/keys/n0secure.org-mail.key
+
+  TrustedHosts: |
+    127.0.0.1
+    localhost
+ 
+  #user-patches.sh: |
+  #  #!/bin/bash
+
+  #fetchmail.cf: |
+
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: mailserver.opendkim.keys
+  namespace: mailserver
+  labels:
+    app: mailserver
+type: Opaque
+# base 64 reencoding is needed
+data:
+  n0secure.org-mail.key: 'XXX'
